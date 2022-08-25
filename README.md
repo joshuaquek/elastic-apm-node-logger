@@ -56,11 +56,11 @@ app.get('/', (req, res) => {
 })
 
 app.get('/test_message', (req, res) => {
-  res.json({ message: 'Hello World to the Everyone!' })
+  res.json({ message: 'Hello World to Everyone!' })
 })
 
 console.log('Server running at http://127.0.0.1:80/')
-app.listen(process.env.PORT || 80) // Create a .env to set env variables
+app.listen(process.env.PORT || 80) // Start ExpressJS server
 
 ```
 
