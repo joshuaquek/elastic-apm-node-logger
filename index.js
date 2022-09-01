@@ -4,21 +4,27 @@ const { Client } = require('@elastic/elasticsearch')
 
 // Elastic APM Logger
 module.exports = {
-  startLogging: async function startLogging (cloudId, apiKey, serviceName, apmObject) {
+  startLogging: async function startLogging ({ cloudId, apiKey, serviceName, apmObject }) {
     const client = new Client({
       cloud: { id: cloudId },
       auth: { apiKey }
     })
+
+    // Create a datastream to send logs back for unique app, skip if datastream already exists
     const loggingDataStreamName = `logs-${serviceName}`
     try {
       await client.indices.createDataStream({ name: loggingDataStreamName })
     } catch (error) {
       console.log('Elastic datastream already exists, skipping datastream creation..., continuing to logging.')
     }
+
+    // Intercept stdout and send to Elastic APM
     interceptStdout((stdout) => {
+      const isJsonAndEcsFormatted = isJsonString(stdout) && isECSFormat(JSON.parse(stdout))
+      const documentToSendBack = isJsonAndEcsFormatted ? JSON.parse(stdout) : ({ '@timestamp': new Date(), service: { name: serviceName }, message: `${stdout} | Elastic APM ${apmObject.currentTraceIds}`.replace(/\n/g, ' ') })
       client.index({
         index: loggingDataStreamName,
-        document: { '@timestamp': new Date(), service: { name: serviceName }, message: `${stdout} | Elastic APM ${apmObject.currentTraceIds}`.replace(/\n/g, ' ') }
+        document: documentToSendBack
       })
     })
   }
@@ -54,4 +60,17 @@ function interceptStdout (callback) {
     process.stdout.write = oldStdoutWrite
     console.error = oldConsoleError
   }
+}
+
+function isJsonString (theString) {
+  try {
+    JSON.parse(theString)
+  } catch (e) {
+    return false
+  }
+  return true
+}
+
+function isECSFormat (jsonObject) {
+  return _.has(jsonObject, 'ecs.version')
 }
