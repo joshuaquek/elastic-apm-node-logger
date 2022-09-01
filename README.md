@@ -5,6 +5,14 @@ As of 25th Aug 2022, the official `elastic-apm-node` NPM library does not send t
 
 Hence this NPM library aims to bridge this gap by allowing you to send logs back together with your metrics from within your NodeJS App (no separate Golang process required)
 
+Before:
+
+<img width="718" alt="image" src="https://user-images.githubusercontent.com/5335756/187828930-72ee367c-edea-45d4-b1fb-856393552520.png">
+
+After:
+
+<img width="712" alt="image" src="https://user-images.githubusercontent.com/5335756/187829043-c3dfa6c2-270f-498c-b869-fa7331faa8b3.png">
+
 ## Further Details
 This is so that under your `Observability > APM > Services > Your NodeJS App`, the `Logs` section will no longer be blank. Apart from that, it also enables your NodeJS app's APM spans and traces to be correlated with the logs that get sent back by this NPM library. Correlation occurs via the "service.name"/"Service Name" Elastic Common Schema field - https://www.elastic.co/guide/en/ecs/current/ecs-service.html#field-service-name.
 
