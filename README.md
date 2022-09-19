@@ -38,7 +38,15 @@ const ELASTICSEARCH_API_KEY = '*** Your API Key ***' // This is created under Yo
 const APM_SERVER_SECRET_TOKEN = '*** Your APM Secret Token ***' // This can be found here - https://www.elastic.co/guide/en/apm/guide/current/secret-token.html
 const APM_SERVER_URL = ' *** Your APM Server HTTPS URL ***' // This can be found in your https://cloud.elastic.co dashboard
 
-// Start Elastic APM Logging Collection
+// Start Elastic APM - METRICS Collection
+const apm = require('elastic-apm-node').start({
+  serviceNodeName: APM_SERVICE_NODE_NAME,
+  serviceName: APM_SERVICE_NAME,
+  secretToken: APM_SERVER_SECRET_TOKEN,
+  serverUrl: APM_SERVER_URL
+})
+
+// Start Elastic APM - LOGGING Collection
 const elasticApmLogger = require('elastic-apm-node-logger')
 elasticApmLogger.startLogging({
   cloudId: ELASTIC_CLOUD_ID,
