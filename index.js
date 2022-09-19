@@ -1,4 +1,4 @@
-const _ = require('underscore')
+const _ = require('lodash')
 const util = require('util')
 const { Client } = require('@elastic/elasticsearch')
 
@@ -14,14 +14,26 @@ module.exports = {
     const loggingDataStreamName = `logs-${serviceName}`
     try {
       await client.indices.createDataStream({ name: loggingDataStreamName })
-    } catch (error) {
       console.log('Elastic datastream already exists, skipping datastream creation..., continuing to logging.')
+    } catch (error) {
     }
 
     // Intercept stdout and send to Elastic APM
     interceptStdout((stdout) => {
       const isJsonAndEcsFormatted = isJsonString(stdout) && isECSFormat(JSON.parse(stdout))
-      const documentToSendBack = isJsonAndEcsFormatted ? JSON.parse(stdout) : ({ '@timestamp': new Date(), service: { name: serviceName }, message: `${stdout} | Elastic APM ${apmObject.currentTraceIds}`.replace(/\n/g, ' ') })
+      // If its a regular log, then also include that as a message and send it back with the "trace.id" and "transaction.id"
+      const documentToSendBack =
+        isJsonAndEcsFormatted
+          ? JSON.parse(stdout)
+          : ({
+              '@timestamp': new Date(),
+              service: { name: serviceName },
+              event: { dataset: `${serviceName}.log` },
+              message: `${stdout}`,
+              trace: { id: apmObject.currentTraceIds['trace.id'] },
+              transaction: { id: apmObject.currentTraceIds['transaction.id'] }
+            })
+      // Send the log line data
       client.index({
         index: loggingDataStreamName,
         document: documentToSendBack
