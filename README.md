@@ -28,7 +28,13 @@ npm install elastic-apm-node-logger
 
 ## Full Usage Example
 
-For a simple NodeJS ExpressJS App (for ECS formatted logs, see the next section):
+Below is an example for how one can use this library.
+
+**Note that there have been some syntax changes on how authentication is done since version 1.0.8 of this library to accomodate for authentication for self-hosted Elasticsearch DB instances.**
+
+For ECS formatted logs, please scroll down, there is a separate section which covers that.
+
+Example:
 
 ```javascript
 // Constants
@@ -49,8 +55,10 @@ const apm = require('elastic-apm-node').start({
 // Start Elastic APM - LOGGING Collection
 const elasticApmLogger = require('elastic-apm-node-logger')
 elasticApmLogger.startLogging({
-  cloudId: ELASTIC_CLOUD_ID,
-  apiKey: ELASTICSEARCH_API_KEY,
+  esAuthObject: {
+    cloud: { id: ELASTIC_CLOUD_ID },
+    auth: { apiKey: ELASTICSEARCH_API_KEY }
+  },
   serviceName: APM_SERVICE_NAME,
   apmObject: apm
 })
@@ -99,6 +107,85 @@ That's about it!
 You should see your logs coming in now under the `Services > Your Service > Logs` tab.
 
 If you are looking to format your logs into ECS Format before sending it back, please refer to the next section.
+
+## Authentication
+
+Since this library internally uses the `@elastic/elasticsearch` npm library, we will also then follow the same method of authentication, by accepting an object of the same format.
+
+Please see https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/client-connecting.html#authentication for more details.
+
+It is essentially the object that the `Client` accepts in the `@elastic/elasticsearch` npm library.
+
+Here are some examples on how you can authenticate:
+
+### Using Cloud ID and API Key:
+
+You can use the Cloud ID and API key to authenticate. This is usually used for Elastic Cloud instances:
+
+```javascript
+// Constants
+const ELASTIC_CLOUD_ID = '*** Your Elastic Cloud ID Here ***' // This can be found in your https://cloud.elastic.co dashboard
+const APM_SERVICE_NAME = 'joshua-api-server-v1' // This is the name of your service.... something meaningful, and has to be a single string
+const ELASTICSEARCH_API_KEY = '*** Your API Key ***' // This is created under Your Deployment > Stack Management > API keys
+const APM_SERVER_SECRET_TOKEN = '*** Your APM Secret Token ***' // This can be found here - https://www.elastic.co/guide/en/apm/guide/current/secret-token.html
+const APM_SERVER_URL = ' *** Your APM Server HTTPS URL ***' // This can be found in your https://cloud.elastic.co dashboard
+
+// Start Elastic APM - METRICS Collection
+const apm = require('elastic-apm-node').start({
+  serviceNodeName: APM_SERVICE_NODE_NAME,
+  serviceName: APM_SERVICE_NAME,
+  secretToken: APM_SERVER_SECRET_TOKEN,
+  serverUrl: APM_SERVER_URL
+})
+
+// Start Elastic APM - LOGGING Collection
+const elasticApmLogger = require('elastic-apm-node-logger')
+elasticApmLogger.startLogging({
+  esAuthObject: {
+    cloud: { id: ELASTIC_CLOUD_ID },
+    auth: { apiKey: ELASTICSEARCH_API_KEY }
+  },
+  serviceName: APM_SERVICE_NAME,
+  apmObject: apm
+})
+```
+
+### Using Username and Password:
+
+You can use username and password to authenticate. This is usually used for self managed Elasticsearch instances (hosted on AWS EC2 etc):
+
+```javascript
+// Constants
+const ELASTICSEARCH_DB_URL = '*** Your Elasticsearch database URL Here ***' // This is the url of your elasticsearch database instance
+const APM_SERVICE_NAME = 'joshua-api-server-v1' // This is the name of your service.... something meaningful, and has to be a single string
+const ELASTICSEARCH_API_KEY = '*** Your API Key ***' // This is created under Your Deployment > Stack Management > API keys
+const APM_SERVER_SECRET_TOKEN = '*** Your APM Secret Token ***' // This can be found here - https://www.elastic.co/guide/en/apm/guide/current/secret-token.html
+const APM_SERVER_URL = ' *** Your APM Server HTTPS URL ***' // This can be found in your https://cloud.elastic.co dashboard
+const ELASTICSEARCH_DB_USERNAME = '*** Your Elasticsearch database username here***' // Username of a user in elasticsearch database
+const ELASTICSEARCH_DB_PASSWORD = '*** Your Elasticsearch database password here***' // Password of the username that you have set earlier
+
+// Start Elastic APM - METRICS Collection
+const apm = require('elastic-apm-node').start({
+  serviceNodeName: APM_SERVICE_NODE_NAME,
+  serviceName: APM_SERVICE_NAME,
+  secretToken: APM_SERVER_SECRET_TOKEN,
+  serverUrl: APM_SERVER_URL
+})
+
+// Start Elastic APM - LOGGING Collection
+const elasticApmLogger = require('elastic-apm-node-logger')
+elasticApmLogger.startLogging({
+  esAuthObject: {
+    node: ELASTICSEARCH_DB_URL,
+    auth: {
+      username: ELASTICSEARCH_DB_USERNAME,
+      password: ELASTICSEARCH_DB_PASSWORD
+    }
+  },
+  serviceName: APM_SERVICE_NAME,
+  apmObject: apm
+})
+```
 
 ## ECS (Elastic Common Schema) Formatters
 You can also format your logs into ECS format before sending it back using popular NodeJS logging libraries like `morgan`, `pino` or `winston` -  https://www.elastic.co/guide/en/ecs-logging/nodejs/current/intro.html

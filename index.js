@@ -4,11 +4,9 @@ const { Client } = require('@elastic/elasticsearch')
 
 // Elastic APM Logger
 module.exports = {
-  startLogging: async function startLogging ({ cloudId, apiKey, serviceName, apmObject }) {
-    const client = new Client({
-      cloud: { id: cloudId },
-      auth: { apiKey }
-    })
+  startLogging: async function startLogging ({ esAuthObject, serviceName, apmObject }) {
+    // The `esAuthObject` is what the Client requires. Documentation here - https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/client-connecting.html#authentication
+    const client = new Client(esAuthObject)
 
     // Create a datastream to send logs back for unique app, skip if datastream already exists
     const loggingDataStreamName = `logs-${serviceName}`
