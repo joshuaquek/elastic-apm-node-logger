@@ -1,5 +1,8 @@
 # Elastic APM NodeJS Logger
 
+## Announcements
+* Version 1.0.8 - **Note that there have been some syntax changes on how authentication is done since version 1.0.8 of this library to accomodate for authentication for self-hosted Elasticsearch DB instances.**
+
 ## Motivation
 As of 25th Aug 2022, the official `elastic-apm-node` NPM library does not send the STDOUT logs of the nodejs application that it is installed on to back to your designated Elastic Stack, and you will have to use Filebeat (separate Golang process) to send the logs back - https://ela.st/nodejs-apm-filebeat. 
 
@@ -29,8 +32,6 @@ npm install elastic-apm-node-logger
 ## Full Usage Example
 
 Below is an example for how one can use this library.
-
-**Note that there have been some syntax changes on how authentication is done since version 1.0.8 of this library to accomodate for authentication for self-hosted Elasticsearch DB instances.**
 
 For ECS formatted logs, please scroll down, there is a separate section which covers that.
 
