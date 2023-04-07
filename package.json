@@ -1,6 +1,6 @@
 {
   "name": "elastic-apm-node-logger",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "As of 25th Aug 2022, the official `elastic-apm-node` NPM library does not send the STDOUT logs of the nodejs application that it is installed on to back to your designated Elastic Stack, hence this NPM library aims to bridge this gap. it also enables your NodeJS app's APM spans and traces to be correlated with the logs that get sent back by this NPM library.",
   "main": "index.js",
   "scripts": {},
